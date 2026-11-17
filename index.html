@@ -1,22 +1,22 @@
-HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Umbrella Size Difference Calculator</title>
+    <title>Product Size Difference Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-900 min-h-screen text-slate-200">
+<body class="bg-[#0b1120] min-h-screen text-slate-200">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState } = React;
 
-        function Calculator() {
+        // --- UMBRELLA CALCULATOR COMPONENT ---
+        function UmbrellaCalculator() {
             const [left, setLeft] = useState("");
             const [leftUnit, setLeftUnit] = useState("cm");
             const [right, setRight] = useState("");
@@ -24,44 +24,22 @@ HTML
             const [auditReason, setAuditReason] = useState("-\n-");
             const [copied, setCopied] = useState(false);
 
-            const handleLeftUnitChange = (e) => {
-                const newUnit = e.target.value;
-                if (left !== "" && !isNaN(left)) {
-                    let val = parseFloat(left);
-                    if (newUnit === "cm" && leftUnit === "inches") {
-                        setLeft((val * 2.54).toFixed(2));
-                    } else if (newUnit === "inches" && leftUnit === "cm") {
-                        setLeft((val / 2.54).toFixed(2));
-                    }
+            const handleUnitChange = (val, currentUnit, newUnit, setVal, setUnit) => {
+                if (val !== "" && !isNaN(val)) {
+                    let num = parseFloat(val);
+                    if (newUnit === "cm" && currentUnit === "inches") setVal((num * 2.54).toFixed(2));
+                    else if (newUnit === "inches" && currentUnit === "cm") setVal((num / 2.54).toFixed(2));
                 }
-                setLeftUnit(newUnit);
-            };
-
-            const handleRightUnitChange = (e) => {
-                const newUnit = e.target.value;
-                if (right !== "" && !isNaN(right)) {
-                    let val = parseFloat(right);
-                    if (newUnit === "cm" && rightUnit === "inches") {
-                        setRight((val * 2.54).toFixed(2));
-                    } else if (newUnit === "inches" && rightUnit === "cm") {
-                        setRight((val / 2.54).toFixed(2));
-                    }
-                }
-                setRightUnit(newUnit);
+                setUnit(newUnit);
             };
 
             const calculateDiff = () => {
-                // RULE: If either side is missing, disregard
                 if (!left || !right || isNaN(left) || isNaN(right)) {
                     setAuditReason("Result: Disregarded\nReason: Both left and right sizes must be provided to compare.");
                     return;
                 }
-
-                let leftInCm = parseFloat(left);
-                if (leftUnit === "inches") leftInCm = leftInCm * 2.54;
-                
-                let rightInCm = parseFloat(right);
-                if (rightUnit === "inches") rightInCm = rightInCm * 2.54;
+                let leftInCm = leftUnit === "inches" ? parseFloat(left) * 2.54 : parseFloat(left);
+                let rightInCm = rightUnit === "inches" ? parseFloat(right) * 2.54 : parseFloat(right);
 
                 const diffPercent = (Math.abs(leftInCm - rightInCm) / leftInCm) * 100;
                 const isSame = diffPercent < 5;
@@ -72,92 +50,68 @@ HTML
             };
 
             const reset = () => {
-                setLeft("");
-                setRight("");
-                setLeftUnit("cm");
-                setRightUnit("cm");
-                setAuditReason("-\n-");
+                setLeft(""); setRight(""); setLeftUnit("cm"); setRightUnit("cm"); setAuditReason("-\n-");
             };
 
             const copyToClipboard = () => {
                 navigator.clipboard.writeText(auditReason);
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
+                setCopied(true); setTimeout(() => setCopied(false), 2000);
             };
 
             return (
-                <div className="max-w-6xl mx-auto p-6 font-sans">
-                    <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
-                        <div>
-                            <h1 className="text-2xl font-bold text-white tracking-wide">Umbrella Size Difference Calculator</h1>
-                            <p className="text-slate-400 text-sm mt-1">Calculate diameter differences to determine if umbrellas are the same</p>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="col-span-1 border border-slate-700 rounded-lg p-4 bg-slate-800/50">
+                        <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculation Rules</h2>
+                        <div className="mt-4 text-sm text-slate-300 leading-relaxed">
+                            <p className="font-bold text-white mb-2">Umbrella Fabric Diameter:</p>
+                            <ul className="list-decimal pl-4 space-y-2">
+                                <li>Formula: <br/><code>| Left - Right | / Left * 100</code></li>
+                                <li>Difference &lt; 5%: <span className="text-emerald-400 font-semibold">Same</span></li>
+                                <li>Difference &ge; 5%: <span className="text-rose-400 font-semibold">Not Same</span></li>
+                                <li>If either size is missing: <span className="text-amber-400 font-semibold">Disregard</span></li>
+                            </ul>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div className="col-span-1 border border-slate-700 rounded-lg p-4 bg-slate-800">
-                            <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculation Rules</h2>
-                            <div className="mt-4 text-sm text-slate-300 leading-relaxed">
-                                <p className="font-bold text-white mb-2">Umbrella Fabric Diameter:</p>
-                                <ul className="list-decimal pl-4 space-y-2">
-                                    <li>Formula: <br/><code>| Left - Right | / Left * 100</code></li>
-                                    <li>Difference &lt; 5%: <span className="text-emerald-400 font-semibold">Same</span></li>
-                                    <li>Difference &ge; 5%: <span className="text-rose-400 font-semibold">Not Same</span></li>
-                                    <li>If either size is missing: <span className="text-amber-400 font-semibold">Disregard</span></li>
-                                </ul>
+                    <div className="col-span-1 lg:col-span-3 border border-slate-700 rounded-lg p-4 bg-slate-800/50">
+                        <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculator</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label className="block text-sky-400 font-semibold mb-2 text-sm uppercase">Left Item</label>
+                                <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
+                                    <input type="number" value={left} onChange={(e) => setLeft(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
+                                    <select value={leftUnit} onChange={(e) => handleUnitChange(left, leftUnit, e.target.value, setLeft, setLeftUnit)} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
+                                        <option value="cm">cm</option><option value="inches">inches</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-indigo-400 font-semibold mb-2 text-sm uppercase">Right Item</label>
+                                <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
+                                    <input type="number" value={right} onChange={(e) => setRight(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
+                                    <select value={rightUnit} onChange={(e) => handleUnitChange(right, rightUnit, e.target.value, setRight, setRightUnit)} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
+                                        <option value="cm">cm</option><option value="inches">inches</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
 
-                        <div className="col-span-1 lg:col-span-2 border border-slate-700 rounded-lg p-4 bg-slate-800">
-                            <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculator</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                                <div>
-                                    <label className="block text-sky-400 font-semibold mb-2 text-sm uppercase">Left Item</label>
-                                    <div className="mt-4">
-                                        <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
-                                            <input type="number" value={left} onChange={(e) => setLeft(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
-                                            <select value={leftUnit} onChange={handleLeftUnitChange} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
-                                                <option value="cm">cm</option>
-                                                <option value="inches">inches</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-indigo-400 font-semibold mb-2 text-sm uppercase">Right Item</label>
-                                    <div className="mt-4">
-                                        <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
-                                            <input type="number" value={right} onChange={(e) => setRight(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
-                                            <select value={rightUnit} onChange={handleRightUnitChange} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
-                                                <option value="cm">cm</option>
-                                                <option value="inches">inches</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="flex gap-4 mt-8">
+                            <button onClick={calculateDiff} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded transition-colors">Calculate Difference</button>
+                            <button onClick={reset} className="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded transition-colors">Reset</button>
+                        </div>
 
-                            <div className="flex gap-4 mt-8">
-                                <button onClick={calculateDiff} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded transition-colors">Calculate Difference</button>
-                                <button onClick={reset} className="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded transition-colors">Reset</button>
-                            </div>
-
-                            <div className="mt-8 border border-slate-700 bg-slate-900 rounded-lg p-4 relative">
-                                <button onClick={copyToClipboard} className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1 px-3 rounded border border-slate-600 transition-colors">
-                                    {copied ? "✓ Copied!" : "📋 Copy Audit Reason"}
-                                </button>
-                                <div className="text-slate-300 text-sm font-mono mt-8 leading-relaxed">
-                                    {auditReason.split('\n').map((line, index) => {
-                                        if (line.startsWith("Result: Same") && !line.includes("Not Same")) {
-                                            return <div key={index} className="text-emerald-400 font-bold mt-1">{line}</div>;
-                                        } else if (line.startsWith("Result: Not Same")) {
-                                            return <div key={index} className="text-rose-400 font-bold mt-1">{line}</div>;
-                                        } else if (line.startsWith("Result: Disregarded")) {
-                                            return <div key={index} className="text-amber-400 font-bold mt-1">{line}</div>;
-                                        }
-                                        return <div key={index}>{line}</div>;
-                                    })}
-                                </div>
+                        <div className="mt-8 border border-slate-700 bg-slate-900 rounded-lg p-4 relative">
+                            <button onClick={copyToClipboard} className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1 px-3 rounded border border-slate-600 transition-colors">
+                                {copied ? "✓ Copied!" : "📋 Copy Audit Reason"}
+                            </button>
+                            <div className="text-slate-300 text-sm font-mono mt-8 leading-relaxed">
+                                {auditReason.split('\n').map((line, index) => {
+                                    if (line.startsWith("Result: Same") && !line.includes("Not Same")) return <div key={index} className="text-emerald-400 font-bold mt-1">{line}</div>;
+                                    else if (line.startsWith("Result: Not Same")) return <div key={index} className="text-rose-400 font-bold mt-1">{line}</div>;
+                                    else if (line.startsWith("Result: Disregarded")) return <div key={index} className="text-amber-400 font-bold mt-1">{line}</div>;
+                                    return <div key={index}>{line}</div>;
+                                })}
                             </div>
                         </div>
                     </div>
@@ -165,8 +119,218 @@ HTML
             );
         }
 
+        // --- BAG & WALLET CALCULATOR COMPONENT ---
+        function BagCalculator() {
+            // Case 1 State
+            const [c1, setC1] = useState({ lL: '', lLu: 'cm', wL: '', wLu: 'cm', hL: '', hLu: 'cm', lR: '', lRu: 'cm', wR: '', wRu: 'cm', hR: '', hRu: 'cm' });
+            // Case 2 State
+            const [c2, setC2] = useState({ lL: '', lLu: 'cm', wL: '', wLu: 'cm', hL: '', hLu: 'cm', lR: '', lRu: 'cm', wR: '', wRu: 'cm', hR: '', hRu: 'cm' });
+            
+            const [res1, setRes1] = useState(null);
+            const [res2, setRes2] = useState(null);
+
+            const toCm = (val, unit) => unit === 'inches' ? parseFloat(val) * 2.54 : parseFloat(val);
+
+            const updateC1 = (field, value) => setC1(prev => ({...prev, [field]: value}));
+            const updateC2 = (field, value) => setC2(prev => ({...prev, [field]: value}));
+
+            const handleUnit = (stateObj, updateFn, valField, unitField, newUnit) => {
+                const val = stateObj[valField];
+                const oldUnit = stateObj[unitField];
+                if (val !== "" && !isNaN(val)) {
+                    let num = parseFloat(val);
+                    if (newUnit === "cm" && oldUnit === "inches") updateFn(valField, (num * 2.54).toFixed(2));
+                    else if (newUnit === "inches" && oldUnit === "cm") updateFn(valField, (num / 2.54).toFixed(2));
+                }
+                updateFn(unitField, newUnit);
+            };
+
+            const calculateDiff = () => {
+                // Case 1 Calc
+                if (c1.lL && c1.wL && c1.hL && c1.lR && c1.wR && c1.hR) {
+                    let vL = toCm(c1.lL, c1.lLu) * toCm(c1.wL, c1.wLu) * toCm(c1.hL, c1.hLu);
+                    let vR = toCm(c1.lR, c1.lRu) * toCm(c1.wR, c1.wRu) * toCm(c1.hR, c1.hRu);
+                    let diff = (Math.abs(vL - vR) / vL) * 100;
+                    setRes1({ vL, vR, diff, isSame: diff < 20 });
+                } else {
+                    setRes1(null);
+                }
+
+                // Case 2 Calc
+                const calcDim = (vL, uL, vR, uR) => {
+                    if (vL && vR) {
+                        let cvL = toCm(vL, uL); let cvR = toCm(vR, uR);
+                        let diff = (Math.abs(cvL - cvR) / cvL) * 100;
+                        return { diff, isSame: diff < 10 };
+                    }
+                    return null;
+                };
+
+                let rL = calcDim(c2.lL, c2.lLu, c2.lR, c2.lRu);
+                let rW = calcDim(c2.wL, c2.wLu, c2.wR, c2.wRu);
+                let rH = calcDim(c2.hL, c2.hLu, c2.hR, c2.hRu);
+
+                setRes2({ rL, rW, rH });
+            };
+
+            const reset = () => {
+                setC1({ lL: '', lLu: 'cm', wL: '', wLu: 'cm', hL: '', hLu: 'cm', lR: '', lRu: 'cm', wR: '', wRu: 'cm', hR: '', hRu: 'cm' });
+                setC2({ lL: '', lLu: 'cm', wL: '', wLu: 'cm', hL: '', hLu: 'cm', lR: '', lRu: 'cm', wR: '', wRu: 'cm', hR: '', hRu: 'cm' });
+                setRes1(null); setRes2(null);
+            };
+
+            const renderInput = (label, obj, setObj, vField, uField) => (
+                <div className="mb-4">
+                    <label className="block text-xs font-semibold text-slate-300 mb-1">{label}</label>
+                    <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
+                        <input type="number" value={obj[vField]} onChange={(e) => setObj(vField, e.target.value)} className="w-full bg-transparent p-2 text-white outline-none text-sm" placeholder="0" />
+                        <select value={obj[uField]} onChange={(e) => handleUnit(obj, setObj, vField, uField, e.target.value)} className="bg-slate-700 text-white px-2 outline-none border-l border-slate-600 text-sm">
+                            <option value="cm">cm</option><option value="inches">in</option>
+                        </select>
+                    </div>
+                </div>
+            );
+
+            return (
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div className="col-span-1 border border-slate-700 rounded-lg p-4 bg-slate-800/50">
+                        <h2 className="text-slate-300 font-bold mb-4 text-xs tracking-wider uppercase border-b border-slate-700 pb-2">Calculation Rules</h2>
+                        <div className="mt-4 text-sm text-slate-300 leading-relaxed">
+                            <p className="font-bold text-white mb-2">Bag, Wallet, Storage Box</p>
+                            <div className="mb-4">
+                                <p className="font-semibold text-xs text-slate-400">CASE 1: 3 DIMENSIONS GIVEN</p>
+                                <p className="text-xs">Tolerance &lt; 20% on Volume (Length × Width × Height)</p>
+                                <ul className="text-xs mt-1">
+                                    <li>Volume diff &lt; 20% &rarr; <span className="text-emerald-400">Same</span></li>
+                                    <li>Volume diff &ge; 20% &rarr; <span className="text-rose-400">Not Same</span></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <p className="font-semibold text-xs text-slate-400">CASE 2: 2 GIVEN, 1 MISSING</p>
+                                <p className="text-xs">Tolerance &lt; 10% on each given dimension (Length & Height or Width)</p>
+                                <ul className="text-xs mt-1">
+                                    <li>Both given dimension diffs &lt; 10% &rarr; <span className="text-emerald-400">Same</span></li>
+                                    <li>Any given dimension diff &ge; 10% &rarr; <span className="text-rose-400">Not Same</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="col-span-1 lg:col-span-3 border border-slate-700 rounded-lg p-4 bg-slate-800/50">
+                        <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculator</h2>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* CASE 1 */}
+                            <div className="border border-slate-700 rounded p-4 bg-slate-800/30">
+                                <h3 className="font-bold text-white text-xs mb-1">CASE 1: 3 DIMENSIONS GIVEN</h3>
+                                <p className="text-xs text-slate-400 mb-4">Tolerance &lt; 20% on Volume (L × W × H)</p>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sky-400 text-xs font-bold mb-2">LEFT ITEM</p>
+                                        {renderInput('Length', c1, updateC1, 'lL', 'lLu')}
+                                        {renderInput('Width', c1, updateC1, 'wL', 'wLu')}
+                                        {renderInput('Height', c1, updateC1, 'hL', 'hLu')}
+                                    </div>
+                                    <div>
+                                        <p className="text-indigo-400 text-xs font-bold mb-2">RIGHT ITEM</p>
+                                        {renderInput('Length', c1, updateC1, 'lR', 'lRu')}
+                                        {renderInput('Width', c1, updateC1, 'wR', 'wRu')}
+                                        {renderInput('Height', c1, updateC1, 'hR', 'hRu')}
+                                    </div>
+                                </div>
+
+                                {res1 && (
+                                    <div className={`mt-4 p-4 rounded-lg border ${res1.isSame ? 'bg-green-900/30 border-green-700' : 'bg-red-900/30 border-red-700'}`}>
+                                        <h4 className={`text-xl font-bold mb-2 ${res1.isSame ? 'text-emerald-400' : 'text-rose-400'}`}>{res1.isSame ? 'SAME' : 'NOT SAME'}</h4>
+                                        <p className="text-xs text-slate-300 mb-1">VOLUME RESULT (L × W × H)</p>
+                                        <p className="text-xs text-white">Diff: {res1.diff.toFixed(2)}% (Allowed: &lt; 20%) | Left Vol: {res1.vL.toFixed(1)}cm³, Right Vol: {res1.vR.toFixed(1)}cm³</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* CASE 2 */}
+                            <div className="border border-slate-700 rounded p-4 bg-slate-800/30">
+                                <h3 className="font-bold text-white text-xs mb-1">CASE 2: 2 GIVEN, 1 MISSING</h3>
+                                <p className="text-xs text-slate-400 mb-4">Tolerance &lt; 10% (Length & Height or Width)</p>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sky-400 text-xs font-bold mb-2">LEFT ITEM</p>
+                                        {renderInput('Length', c2, updateC2, 'lL', 'lLu')}
+                                        {renderInput('Width', c2, updateC2, 'wL', 'wLu')}
+                                        {renderInput('Height', c2, updateC2, 'hL', 'hLu')}
+                                    </div>
+                                    <div>
+                                        <p className="text-indigo-400 text-xs font-bold mb-2">RIGHT ITEM</p>
+                                        {renderInput('Length', c2, updateC2, 'lR', 'lRu')}
+                                        {renderInput('Width', c2, updateC2, 'wR', 'wRu')}
+                                        {renderInput('Height', c2, updateC2, 'hR', 'hRu')}
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 p-4 rounded-lg bg-slate-900 border border-slate-700">
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                        <div className="p-2 border border-slate-700 rounded bg-slate-800">
+                                            <p className="text-slate-400 mb-1 font-bold">LENGTH RESULT</p>
+                                            {res2?.rL ? <p className={res2.rL.isSame ? 'text-emerald-400' : 'text-rose-400'}>{res2.rL.isSame ? 'SAME' : 'NOT SAME'} ({res2.rL.diff.toFixed(2)}%)</p> : <p className="text-slate-500">- Waiting for values</p>}
+                                        </div>
+                                        <div className="p-2 border border-slate-700 rounded bg-slate-800">
+                                            <p className="text-slate-400 mb-1 font-bold">WIDTH RESULT</p>
+                                            {res2?.rW ? <p className={res2.rW.isSame ? 'text-emerald-400' : 'text-rose-400'}>{res2.rW.isSame ? 'SAME' : 'NOT SAME'} ({res2.rW.diff.toFixed(2)}%)</p> : <p className="text-slate-500">- Waiting for values</p>}
+                                        </div>
+                                        <div className="p-2 border border-slate-700 rounded bg-slate-800 col-span-2">
+                                            <p className="text-slate-400 mb-1 font-bold">HEIGHT RESULT</p>
+                                            {res2?.rH ? <p className={res2.rH.isSame ? 'text-emerald-400' : 'text-rose-400'}>{res2.rH.isSame ? 'SAME' : 'NOT SAME'} ({res2.rH.diff.toFixed(2)}%)</p> : <p className="text-slate-500">- Waiting for values</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 mt-6">
+                            <button onClick={calculateDiff} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded transition-colors">Calculate Difference</button>
+                            <button onClick={reset} className="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded transition-colors">Reset</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // --- MAIN APP (TABS) ---
+        function App() {
+            const [activeTab, setActiveTab] = useState('bag');
+
+            return (
+                <div className="max-w-[1400px] mx-auto p-4 md:p-6 font-sans">
+                    <div className="mb-6">
+                        <h1 className="text-2xl font-bold text-white tracking-wide mb-1">Product Size Difference Calculator</h1>
+                        <p className="text-slate-400 text-sm">Calculate item differences based on product type rules</p>
+                    </div>
+
+                    {/* TABS */}
+                    <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-700 pb-4">
+                        <button 
+                            onClick={() => setActiveTab('bag')} 
+                            className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${activeTab === 'bag' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
+                            Bag, Wallet, Box
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('umbrella')} 
+                            className={`px-4 py-2 rounded font-semibold text-sm transition-colors ${activeTab === 'umbrella' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}>
+                            Umbrella
+                        </button>
+                    </div>
+
+                    {/* ACTIVE CALCULATOR */}
+                    {activeTab === 'umbrella' && <UmbrellaCalculator />}
+                    {activeTab === 'bag' && <BagCalculator />}
+                </div>
+            );
+        }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Calculator />);
+        root.render(<App />);
     </script>
 </body>
 </html>
