@@ -63,7 +63,7 @@
 
                 const diffPercent = (Math.abs(leftInCm - rightInCm) / leftInCm) * 100;
                 const isSame = diffPercent < 5;
-                const verdict = isSame ? "Same Model" : "Not Same";
+                const verdict = isSame ? "Same" : "Not Same";
                 
                 const reasonStr = `Left: ${leftInCm.toFixed(2)} cm\nRight: ${rightInCm.toFixed(2)} cm\nDiff: ${diffPercent.toFixed(2)}%\nResult: ${verdict}`;
                 setAuditReason(reasonStr);
@@ -88,7 +88,7 @@
                     <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
                         <div>
                             <h1 className="text-2xl font-bold text-white tracking-wide">Umbrella Size Difference Calculator</h1>
-                            <p className="text-slate-400 text-sm mt-1">Calculate diameter differences to determine if umbrellas are the same model</p>
+                            <p className="text-slate-400 text-sm mt-1">Calculate diameter differences to determine if umbrellas are the same</p>
                         </div>
                     </div>
 
@@ -99,7 +99,7 @@
                                 <p className="font-bold text-white mb-2">Umbrella Fabric Diameter:</p>
                                 <ul className="list-decimal pl-4 space-y-2">
                                     <li>Formula: <br/><code>| Left - Right | / Left * 100</code></li>
-                                    <li>Difference &lt; 5%: <span className="text-emerald-400 font-semibold">Same Model</span></li>
+                                    <li>Difference &lt; 5%: <span className="text-emerald-400 font-semibold">Same</span></li>
                                     <li>Difference &ge; 5%: <span className="text-rose-400 font-semibold">Not Same</span></li>
                                 </ul>
                             </div>
@@ -145,7 +145,7 @@
                                 </button>
                                 <div className="text-slate-300 text-sm font-mono mt-8 leading-relaxed">
                                     {auditReason.split('\n').map((line, index) => {
-                                        if (line.startsWith("Result: Same Model")) {
+                                        if (line.startsWith("Result: Same") && !line.includes("Not Same")) {
                                             return <div key={index} className="text-emerald-400 font-bold mt-1">{line}</div>;
                                         } else if (line.startsWith("Result: Not Same")) {
                                             return <div key={index} className="text-rose-400 font-bold mt-1">{line}</div>;
