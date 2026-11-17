@@ -41,4 +41,127 @@
                 if (right !== "" && !isNaN(right)) {
                     let val = parseFloat(right);
                     if (newUnit === "cm" && rightUnit === "inches") {
-                        setRight((val * 2.54).toFixed
+                        setRight((val * 2.54).toFixed(2));
+                    } else if (newUnit === "inches" && rightUnit === "cm") {
+                        setRight((val / 2.54).toFixed(2));
+                    }
+                }
+                setRightUnit(newUnit);
+            };
+
+            const calculateDiff = () => {
+                if (!left || !right || isNaN(left) || isNaN(right)) {
+                    alert("Please enter valid numbers");
+                    return;
+                }
+
+                let leftInCm = parseFloat(left);
+                if (leftUnit === "inches") leftInCm = leftInCm * 2.54;
+                
+                let rightInCm = parseFloat(right);
+                if (rightUnit === "inches") rightInCm = rightInCm * 2.54;
+
+                const diffPercent = (Math.abs(leftInCm - rightInCm) / leftInCm) * 100;
+                const isSame = diffPercent < 5;
+                const verdict = isSame ? "Same Model" : "Not Same";
+                
+                const reasonStr = `Left: ${leftInCm.toFixed(2)} cm\nRight: ${rightInCm.toFixed(2)} cm\nDiff: ${diffPercent.toFixed(2)}%\nResult: ${verdict}`;
+                setAuditReason(reasonStr);
+            };
+
+            const reset = () => {
+                setLeft("");
+                setRight("");
+                setLeftUnit("cm");
+                setRightUnit("cm");
+                setAuditReason("-\n-");
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(auditReason);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            return (
+                <div className="max-w-6xl mx-auto p-6 font-sans">
+                    <div className="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+                        <div>
+                            <h1 className="text-2xl font-bold text-white tracking-wide">Umbrella Size Difference Calculator</h1>
+                            <p className="text-slate-400 text-sm mt-1">Calculate diameter differences to determine if umbrellas are the same model</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="col-span-1 border border-slate-700 rounded-lg p-4 bg-slate-800">
+                            <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculation Rules</h2>
+                            <div className="mt-4 text-sm text-slate-300 leading-relaxed">
+                                <p className="font-bold text-white mb-2">Umbrella Fabric Diameter:</p>
+                                <ul className="list-decimal pl-4 space-y-2">
+                                    <li>Formula: <br/><code>| Left - Right | / Left * 100</code></li>
+                                    <li>Difference &lt; 5%: <span className="text-emerald-400 font-semibold">Same Model</span></li>
+                                    <li>Difference &ge; 5%: <span className="text-rose-400 font-semibold">Not Same</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div className="col-span-1 lg:col-span-2 border border-slate-700 rounded-lg p-4 bg-slate-800">
+                            <h2 className="text-slate-300 font-bold mb-4 text-sm tracking-wider uppercase border-b border-slate-700 pb-2">Calculator</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                                <div>
+                                    <label className="block text-sky-400 font-semibold mb-2 text-sm uppercase">Left Item</label>
+                                    <div className="mt-4">
+                                        <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
+                                            <input type="number" value={left} onChange={(e) => setLeft(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
+                                            <select value={leftUnit} onChange={handleLeftUnitChange} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
+                                                <option value="cm">cm</option>
+                                                <option value="inches">inches</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-indigo-400 font-semibold mb-2 text-sm uppercase">Right Item</label>
+                                    <div className="mt-4">
+                                        <div className="flex rounded-md bg-slate-900 border border-slate-700 overflow-hidden">
+                                            <input type="number" value={right} onChange={(e) => setRight(e.target.value)} className="w-full bg-transparent p-2 text-white outline-none" placeholder="0" />
+                                            <select value={rightUnit} onChange={handleRightUnitChange} className="bg-slate-700 text-white px-3 outline-none border-l border-slate-600">
+                                                <option value="cm">cm</option>
+                                                <option value="inches">inches</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-4 mt-8">
+                                <button onClick={calculateDiff} className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded transition-colors">Calculate Difference</button>
+                                <button onClick={reset} className="bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-6 rounded transition-colors">Reset</button>
+                            </div>
+
+                            <div className="mt-8 border border-slate-700 bg-slate-900 rounded-lg p-4 relative">
+                                <button onClick={copyToClipboard} className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1 px-3 rounded border border-slate-600 transition-colors">
+                                    {copied ? "✓ Copied!" : "📋 Copy Audit Reason"}
+                                </button>
+                                <div className="text-slate-300 text-sm font-mono mt-8 leading-relaxed">
+                                    {auditReason.split('\n').map((line, index) => {
+                                        if (line.startsWith("Result: Same Model")) {
+                                            return <div key={index} className="text-emerald-400 font-bold mt-1">{line}</div>;
+                                        } else if (line.startsWith("Result: Not Same")) {
+                                            return <div key={index} className="text-rose-400 font-bold mt-1">{line}</div>;
+                                        }
+                                        return <div key={index}>{line}</div>;
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<Calculator />);
+    </script>
+</body>
+</html>
