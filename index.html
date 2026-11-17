@@ -143,7 +143,16 @@
                                 <button onClick={copyToClipboard} className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs py-1 px-3 rounded border border-slate-600 transition-colors">
                                     {copied ? "✓ Copied!" : "📋 Copy Audit Reason"}
                                 </button>
-                                <pre className="text-slate-300 text-sm whitespace-pre-wrap font-mono mt-8">{auditReason}</pre>
+                                <div className="text-slate-300 text-sm font-mono mt-8 leading-relaxed">
+                                    {auditReason.split('\n').map((line, index) => {
+                                        if (line.startsWith("Result: Same Model")) {
+                                            return <div key={index} className="text-emerald-400 font-bold mt-1">{line}</div>;
+                                        } else if (line.startsWith("Result: Not Same")) {
+                                            return <div key={index} className="text-rose-400 font-bold mt-1">{line}</div>;
+                                        }
+                                        return <div key={index}>{line}</div>;
+                                    })}
+                                </div>
                             </div>
                         </div>
                     </div>
